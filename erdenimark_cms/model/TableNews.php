@@ -1,0 +1,116 @@
+<?
+/**
+ * Author: Erdeni Tsyrendashiyev
+ * Date: 13.02.2018
+ */
+
+namespace ErdeniMark\Model;
+
+/**
+ * класс-обертка для таблицы бд news
+ */
+class NewsRow {
+
+	public $id;
+	public $header;
+	public $descript;
+	public $content;
+	public $createman;
+	public $createtime;
+	public $src1;
+	public $src2;
+	public $src3;
+	public $href;
+	public $link;
+
+}
+
+/**
+ * класс-модель для работы с Новости
+ */
+class TableNews {
+
+	/**
+	 * [getOneById description]
+	 * @param  [type] $id [description]
+	 * @return [object]     [description]
+	 */
+	public function getOneById ($id) {
+
+		$query = "SELECT * FROM news WHERE id = :id";
+
+		$params = array (":id" => $id);
+
+		$row = $this->getRowObject ($query, $params);
+
+		return $row;
+
+	}
+
+	/**
+	 * [getAllWithoutContent description]
+	 * @return [array of arrays] [description]
+	 */
+	public function getAllWithoutContent() {
+
+		$query = "SELECT id,header,descript,createman,createtime,src1,src2,src3,href,link FROM news";
+
+		$params = array ();
+
+		$allRows = $this->getAllRows ($query, $params);
+
+		return $allRows;
+
+	}
+
+	/**
+	 * [getRowObject description]
+	 * @param  [type] $sqlQuery    [description]
+	 * @param  [type] $paramsArray [description]
+	 * @return [object]              [description]
+	 */
+	private function getRowObject ($sqlQuery, $paramsArray) {
+
+		$pdo = DatabasePdo::getInstance();
+
+		try {
+			$pdoStatement = $pdo->prepare ($sqlQuery);
+			$newsRow = new NewsRow();
+			$settings = $pdoStatement->setFetchMode (\PDO::FETCH_INTO, $newsRow);
+			$zapros = $pdoStatement->execute ($paramsArray);
+			$newsRow = $pdoStatement->fetch(\PDO::FETCH_INTO);
+			$pdoStatement->closeCursor();
+			return $newsRow;
+		}
+		catch (\PDOException $pe) {
+			return $pe;
+		}
+
+	}
+
+	/**
+	 * [getAllRows description]
+	 * @param  [type] $sqlQuery    [description]
+	 * @param  [type] $paramsArray [description]
+	 * @return [fetch array of arrays]  [description]
+	 */
+	private function getAllRows ($sqlQuery, $paramsArray) {
+
+		$pdo = DatabasePdo::getInstance();
+
+		try {
+			$pdoStatement = $pdo->prepare ($sqlQuery);
+			$settings = $pdoStatement->setFetchMode (\PDO::FETCH_BOTH);
+			$zapros = $pdoStatement->execute($paramsArray);			
+			$result = $pdoStatement->fetchAll();
+			$pdoStatement->closeCursor();
+			return $result;
+		}
+		catch (\PDOException $pe) {
+			return $pe;
+		}
+	}
+
+}
+
+?>
